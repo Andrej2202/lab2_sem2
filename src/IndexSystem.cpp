@@ -19,7 +19,7 @@ Sequence<Student>* IndexSystem::FetchStudents(Sequence<Pair<int, size_t>>* index
         Pair<int, size_t> p = indexResult->Get(i);
         result->Append(storage_->ReadStudent(p.second));
     }
-    delete indexResult; // Освобождаем память индекса, так как вернули студентов
+    delete indexResult;
     return result;
 }
 
@@ -31,26 +31,53 @@ void IndexSystem::LoadFromCSV(const std::string& csvPath) {
     }
 
     std::string line;
-    // Пропускаем заголовок, если он есть (опционально, зависит от CSV)
-    // std::getline(file, line); 
+    
+    if (std::getline(file, line)) {
+        if (line.find("Год") != std::string::npos || line.find("Year") != std::string::npos) {
+        } else {
+            file.clear();
+            file.seekg(0);
+        }
+    }
 
     int count = 0;
+    int skipped = 0;
     while (std::getline(file, line)) {
         if (line.empty()) continue;
+        
         std::stringstream ss(line);
         std::string firstName, lastName, yearStr, group;
         
-        if (std::getline(ss, firstName, ',') &&
-            std::getline(ss, lastName, ',') &&
-            std::getline(ss, yearStr, ',') &&
-            std::getline(ss, group, ',')) {
-            
-            Student student(firstName, lastName, std::stoi(yearStr), group);
-            AddStudent(student);
-            count++;
+        try {
+            if (std::getline(ss, firstName, ',') &&
+                std::getline(ss, lastName, ',') &&
+                std::getline(ss, yearStr, ',') &&
+                std::getline(ss, group, ',')) {
+                
+                while (!yearStr.empty() && (yearStr.back() == '\r' || yearStr.back() == '\n' || yearStr.back() == ' ')) {
+                    yearStr.pop_back();
+                }
+                while (!group.empty() && (group.back() == '\r' || group.back() == '\n' || group.back() == ' ')) {
+                    group.pop_back();
+                }
+                
+                int year = std::stoi(yearStr);
+                Student student(firstName, lastName, year, group);
+                AddStudent(student);
+                count++;
+            } else {
+                skipped++;
+            }
+        } catch (const std::exception& e) {
+            skipped++;
         }
     }
-    std::cout << "Загружено " << count << " записей из CSV.\n";
+    
+    std::cout << "Загружено " << count << " записей из CSV";
+    if (skipped > 0) {
+        std::cout << " (пропущено " << skipped << " некорректных строк)";
+    }
+    std::cout << ".\n";
 }
 
 void IndexSystem::AddStudent(const Student& student) {
@@ -61,19 +88,16 @@ void IndexSystem::AddStudent(const Student& student) {
 }
 
 Sequence<Student>* IndexSystem::SearchByYear(int year) const {
-    // Ищем в SortedSequence
     int index = sortedIndex_->IndexOf(Pair<int, size_t>(year, 0));
     if (index == -1) {
-        return new MutableArraySequence<Student>(); // Пустой результат
+        return new MutableArraySequence<Student>();
     }
     
-    // Поскольку могут быть дубликаты года, лучше использовать GetRange
     auto range = sortedIndex_->GetRange(Pair<int, size_t>(year, 0), Pair<int, size_t>(year, std::numeric_limits<size_t>::max()));
     return FetchStudents(range);
 }
 
 Sequence<Student>* IndexSystem::SearchByYearRange(int minYear, int maxYear) const {
-    // Ищем в BinaryTree (демонстрируем работу обоих индексов)
     auto range = treeIndex_->GetRange(Pair<int, size_t>(minYear, 0), Pair<int, size_t>(maxYear, std::numeric_limits<size_t>::max()));
     return FetchStudents(range);
 }
@@ -82,14 +106,12 @@ Sequence<Student>* IndexSystem::GetAllStudents() const {
     return storage_->ReadAllStudents();
 }
 
-// --- Бенчмарк ---
 
 IndexSystem::BenchmarkResult IndexSystem::RunBenchmark(size_t N, bool isSorted, bool isAscending) const {
     BenchmarkResult result;
     result.dataSize = N;
     result.dataType = isSorted ? (isAscending ? "Sorted Asc" : "Sorted Desc") : "Random";
 
-    // 1. Генерация данных
     std::vector<Student> students;
     students.reserve(N);
     std::random_device rd;
@@ -109,7 +131,6 @@ IndexSystem::BenchmarkResult IndexSystem::RunBenchmark(size_t N, bool isSorted, 
         }
     }
 
-    // Временное хранилище для бенчмарка
     FileStorage tempStorage("benchmark_temp.bin");
     tempStorage.Clear();
     BinaryTree<Pair<int, size_t>> tempTree;
@@ -125,13 +146,12 @@ IndexSystem::BenchmarkResult IndexSystem::RunBenchmark(size_t N, bool isSorted, 
 
     start = std::chrono::high_resolution_clock::now();
     for (const auto& s : students) {
-        size_t offset = tempStorage.WriteStudent(s); // Пишем еще раз для независимого теста массива
+        size_t offset = tempStorage.WriteStudent(s);
         tempSeq.Add({s.birthYear, offset});
     }
     end = std::chrono::high_resolution_clock::now();
     result.sortedBuildTime_ms = std::chrono::duration<double, std::milli>(end - start).count();
 
-    // Поиск диапазона (например, от 1995 до 2005)
     Pair<int, size_t> minP(1995, 0);
     Pair<int, size_t> maxP(2005, std::numeric_limits<size_t>::max());
 
@@ -159,7 +179,7 @@ void IndexSystem::RunFullBenchmark(const std::string& outputFile) const {
 
     out << "Тип_данных; N; Время_построения_Дерево; Время_построения_Массив; Время_поиска_Дерево; Время_поиска_Массив\n";
 
-    size_t sizes[] = {1000, 10000}; // Можно добавить 100000, но это займет время
+    size_t sizes[] = {1000, 10000};
     
     for (size_t N : sizes) {
         auto res1 = RunBenchmark(N, true, true);

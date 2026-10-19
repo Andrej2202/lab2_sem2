@@ -1,49 +1,37 @@
-#include "Student.hpp"
-#include "Pair.hpp"
+#include "test_student.hpp"
+#include "test_pair.hpp"
+#include "test_sorted_sequence.hpp"
+#include "test_binary_tree.hpp"
+#include "test_file_storage.hpp"
+#include "test_index_system.hpp"
+
 #include <iostream>
-#include <cassert>
-
-void test_student_creation() {
-    std::cout << "Тест 1: Создание студента... ";
-    Student s("Тест", "Тестов", 2000, "ТГ-01");
-    assert(s.firstName == "Тест");
-    assert(s.lastName == "Тестов");
-    assert(s.birthYear == 2000);
-    assert(s.group == "ТГ-01");
-    std::cout << "ПРОЙДЕН\n";
-}
-
-void test_pair_creation() {
-    std::cout << "Тест 2: Создание Pair... ";
-    Pair<int, Student> p(2000, Student("Иван", "Иванов", 2000, "ИТ-21"));
-    assert(p.first == 2000);
-    assert(p.second.firstName == "Иван");
-    std::cout << "ПРОЙДЕН\n";
-}
-
-void test_pair_comparison() {
-    std::cout << "Тест 3: Сравнение Pair... ";
-    Pair<int, Student> p1(2000, Student());
-    Pair<int, Student> p2(2001, Student());
-    Pair<int, Student> p3(2000, Student());
-    
-    assert(p1 < p2);
-    assert(p2 > p1);
-    assert(p1 == p3);
-    assert(p1 != p2);
-    assert(p1 <= p3);
-    assert(p1 >= p3);
-    std::cout << "ПРОЙДЕН\n";
-}
 
 int main() {
-    std::cout << "=== Запуск тестов ===\n\n";
+    std::cout << "========================================\n";
+    std::cout << "  ЗАПУСК ВСЕХ ТЕСТОВ\n";
+    std::cout << "========================================\n\n";
     
-    test_student_creation();
-    test_pair_creation();
-    test_pair_comparison();
-    
-    std::cout << "\n=== Все тесты пройдены! ===\n";
-    
-    return 0;
+    try {
+        test_student();
+        test_pair();
+        test_sorted_sequence();
+        test_binary_tree();
+        test_file_storage();
+        test_index_system();
+        
+        std::cout << "========================================\n";
+        std::cout << "  ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО! \n";
+        std::cout << "========================================\n";
+        
+        return 0;
+    } 
+    catch (const std::exception& e) {
+        std::cerr << "\n[ОШИБКА]: " << e.what() << "\n";
+        return 1;
+    }
+    catch (...) {
+        std::cerr << "\n[ОШИБКА]: Неизвестное исключение!\n";
+        return 1;
+    }
 }
