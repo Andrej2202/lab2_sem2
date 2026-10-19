@@ -14,6 +14,10 @@
 #include <chrono>
 #include <iostream>
 #include <random>
+#include <algorithm>
+#include <limits>
+
+
 
 class IndexSystem {
 private:
@@ -21,31 +25,24 @@ private:
     BinaryTree<Pair<int, size_t>>* treeIndex_;
     SortedSequence<Pair<int, size_t>>* sortedIndex_;
 
-    // Вспомогательный метод: читает студентов по смещениям из индекса
     Sequence<Student>* FetchStudents(Sequence<Pair<int, size_t>>* indexResult) const;
 
 public:
     IndexSystem(const std::string& dataFilePath);
     ~IndexSystem();
 
-    // Загрузка из CSV (формат: Имя,Фамилия,Год,Группа)
+    // Загрузка из CSV (std::string версия - для тестов)
     void LoadFromCSV(const std::string& csvPath);
+    //void LoadFromCSV(const QString& csvPath);
     
-    // Добавление одного студента
+    
     void AddStudent(const Student& student);
-
-    // Точный поиск по году
     Sequence<Student>* SearchByYear(int year) const;
-    
-    // Поиск по диапазону [minYear, maxYear]
     Sequence<Student>* SearchByYearRange(int minYear, int maxYear) const;
-    
-    // Получить всех студентов (для UI)
     Sequence<Student>* GetAllStudents() const;
 
-    // --- Бенчмарк ---
     struct BenchmarkResult {
-        std::string dataType; // "Sorted Asc", "Sorted Desc", "Random"
+        std::string dataType;
         size_t dataSize;
         double treeBuildTime_ms;
         double sortedBuildTime_ms;
@@ -53,9 +50,6 @@ public:
         double sortedSearchTime_ms;
     };
 
-    // Генерация тестовых данных и замер времени
     BenchmarkResult RunBenchmark(size_t N, bool isSorted, bool isAscending) const;
-    
-    // Запуск полного бенчмарка по всем сценариям из ТЗ
     void RunFullBenchmark(const std::string& outputFile) const;
 };
