@@ -19,7 +19,7 @@ add_executable(student_system
     src/main.cpp
     src/Student.cpp
     src/FileStorage.cpp
-    # src/IndexSystem.cpp
+    src/IndexSystem.cpp
 )
 
 # Тестовая цель
@@ -27,7 +27,7 @@ add_executable(test_system
     tests/test_main.cpp
     src/Student.cpp
     src/FileStorage.cpp
-    # src/IndexSystem.cpp
+    src/IndexSystem.cpp
 )
 
 
