@@ -1,17 +1,12 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QTableWidget>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QLabel>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGroupBox>
-#include <QMessageBox>
-#include <QFileDialog>
-
+#include <QTableView>
 #include "IndexSystem.hpp"
+#include "StudentTableModel.hpp"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -27,15 +22,16 @@ private slots:
     void onSearchByRange();
     void onShowAll();
     void onRunBenchmark();
+    void onClearDatabase();
 
 private:
     void setupUI();
-    void populateTable(Sequence<Student>* students);
     void clearTable();
 
-    // Инициализируем указатели nullptr, чтобы избежать мусора при ошибках
     IndexSystem* system_ = nullptr;
-    QTableWidget* tableWidget_ = nullptr;
+    QTableView* tableView_ = nullptr;
+    StudentTableModel* model_ = nullptr;
+    
     QLineEdit* editFirstName_ = nullptr;
     QLineEdit* editLastName_ = nullptr;
     QLineEdit* editYear_ = nullptr;

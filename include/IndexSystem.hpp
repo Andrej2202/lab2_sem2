@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <limits>
 
-
+class QTableWidget;
 
 class IndexSystem {
 private:
@@ -31,15 +31,16 @@ public:
     IndexSystem(const std::string& dataFilePath);
     ~IndexSystem();
 
-    // Загрузка из CSV (std::string версия - для тестов)
     void LoadFromCSV(const std::string& csvPath);
-    //void LoadFromCSV(const QString& csvPath);
-    
-    
     void AddStudent(const Student& student);
+    void ClearDatabase();
     Sequence<Student>* SearchByYear(int year) const;
     Sequence<Student>* SearchByYearRange(int minYear, int maxYear) const;
     Sequence<Student>* GetAllStudents() const;
+
+    void SearchByYearAndPopulate(int year, QTableWidget* table) const;
+    void SearchByYearRangeAndPopulate(int minYear, int maxYear, QTableWidget* table) const;
+    void ShowAllAndPopulate(QTableWidget* table) const;
 
     struct BenchmarkResult {
         std::string dataType;
