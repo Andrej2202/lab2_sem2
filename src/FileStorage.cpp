@@ -1,6 +1,4 @@
 #include "FileStorage.hpp"
-#include "base/Exceptions.hpp"
-#include <stdexcept>
 
 FileStorage::FileStorage(const std::string& filename) : filename_(filename) {
     std::ofstream file(filename_, std::ios::binary | std::ios::app);
@@ -11,7 +9,8 @@ FileStorage::FileStorage(const std::string& filename) : filename_(filename) {
 
 FileStorage::~FileStorage() {}
 
-void FileStorage::WriteString(std::ofstream& file, const std::string& str) {
+// <-- Добавили const
+void FileStorage::WriteString(std::ostream& file, const std::string& str) const {
     uint32_t length = static_cast<uint32_t>(str.length());
     file.write(reinterpret_cast<const char*>(&length), sizeof(uint32_t));
     if (length > 0) {
@@ -19,7 +18,8 @@ void FileStorage::WriteString(std::ofstream& file, const std::string& str) {
     }
 }
 
-std::string FileStorage::ReadString(std::ifstream& file) {
+// <-- Добавили const
+std::string FileStorage::ReadString(std::istream& file) const {
     uint32_t length = 0;
     file.read(reinterpret_cast<char*>(&length), sizeof(uint32_t));
     
@@ -35,11 +35,14 @@ std::string FileStorage::ReadString(std::ifstream& file) {
 }
 
 size_t FileStorage::WriteStudent(const Student& student) {
-    std::ofstream file(filename_, std::ios::binary | std::ios::app);
+    std::fstream file(filename_, std::ios::binary | std::ios::in | std::ios::out);
+    
     if (!file.is_open()) {
-        throw std::runtime_error("FileStorage: Cannot open file for writing");
+        std::ofstream create(filename_, std::ios::binary);
+        file.open(filename_, std::ios::binary | std::ios::in | std::ios::out);
     }
 
+    file.seekp(0, std::ios::end);
     size_t offset = static_cast<size_t>(file.tellp());
 
     WriteString(file, student.firstName);
@@ -53,12 +56,11 @@ size_t FileStorage::WriteStudent(const Student& student) {
     return offset;
 }
 
-Student FileStorage::ReadStudent(size_t offset) {
+Student FileStorage::ReadStudent(size_t offset) const {
     std::ifstream file(filename_, std::ios::binary);
     if (!file.is_open()) {
         throw std::runtime_error("FileStorage: Cannot open file for reading");
     }
-
 
     file.seekg(static_cast<std::streamoff>(offset));
     if (file.fail()) {
@@ -78,7 +80,11 @@ Student FileStorage::ReadStudent(size_t offset) {
     return student;
 }
 
-Sequence<Student>* FileStorage::ReadAllStudents() {
+void FileStorage::Clear() {
+    std::ofstream file(filename_, std::ios::binary | std::ios::trunc);
+}
+
+Sequence<Student>* FileStorage::ReadAllStudents() const {
     MutableArraySequence<Student>* students = new MutableArraySequence<Student>();
     
     std::ifstream file(filename_, std::ios::binary);
@@ -86,19 +92,38 @@ Sequence<Student>* FileStorage::ReadAllStudents() {
         return students;
     }
 
-    while (file.peek() != EOF) {
+    while (file.good() && !file.eof()) {
         size_t currentOffset = static_cast<size_t>(file.tellg());
+        
+        uint32_t length = 0;
+        file.read(reinterpret_cast<char*>(&length), sizeof(uint32_t));
+        
+        if (file.eof() || file.fail()) {
+            break;
+        }
+        
+        file.seekg(static_cast<std::streamoff>(currentOffset));
+        
         try {
-            Student student = ReadStudent(currentOffset);
+            Student student;
+            student.firstName = ReadString(file);
+            student.lastName = ReadString(file);
+            
+            int32_t birthYear = 0;
+            file.read(reinterpret_cast<char*>(&birthYear), sizeof(int32_t));
+            student.birthYear = birthYear;
+            
+            student.group = ReadString(file);
+            
+            if (file.fail()) {
+                break;
+            }
+            
             students->Append(student);
-        } catch (const EndOfStreamException&) {
+        } catch (...) {
             break;
         }
     }
 
     return students;
-}
-
-void FileStorage::Clear() {
-    std::ofstream file(filename_, std::ios::binary | std::ios::trunc);
 }
