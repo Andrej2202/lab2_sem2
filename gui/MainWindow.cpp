@@ -316,9 +316,59 @@ void MainWindow::onRunBenchmark() {
     
     try {
         QDir().mkpath("results");
-        system_->RunFullBenchmark("results/results.csv");
+        
+        
+        IndexSystem tempSystem("benchmark_temp_system.bin");
+        
+        QVector<BenchmarkRow> rows;
+        
+        
+        size_t sizes[] = {1000, 10000};
+        
+        for (size_t N : sizes) {
+            auto res1 = tempSystem.RunBenchmark(N, true, true);
+            BenchmarkRow row1;
+            row1.dataType = QString::fromStdString(res1.dataType);
+            row1.dataSize = res1.dataSize;
+            row1.treeBuildTime = res1.treeBuildTime_ms;
+            row1.sortedBuildTime = res1.sortedBuildTime_ms;
+            row1.treeSearchTime = res1.treeSearchTime_ms;
+            row1.sortedSearchTime = res1.sortedSearchTime_ms;
+            rows.append(row1);
+            
+            
+            auto res2 = tempSystem.RunBenchmark(N, true, false);
+            BenchmarkRow row2;
+            row2.dataType = QString::fromStdString(res2.dataType);
+            row2.dataSize = res2.dataSize;
+            row2.treeBuildTime = res2.treeBuildTime_ms;
+            row2.sortedBuildTime = res2.sortedBuildTime_ms;
+            row2.treeSearchTime = res2.treeSearchTime_ms;
+            row2.sortedSearchTime = res2.sortedSearchTime_ms;
+            rows.append(row2);
+            
+            
+            auto res3 = tempSystem.RunBenchmark(N, false, false);
+            BenchmarkRow row3;
+            row3.dataType = QString::fromStdString(res3.dataType);
+            row3.dataSize = res3.dataSize;
+            row3.treeBuildTime = res3.treeBuildTime_ms;
+            row3.sortedBuildTime = res3.sortedBuildTime_ms;
+            row3.treeSearchTime = res3.treeSearchTime_ms;
+            row3.sortedSearchTime = res3.sortedSearchTime_ms;
+            rows.append(row3);
+        }
+        
+        
+        tempSystem.RunFullBenchmark("results/results.csv");
+        
+        
+        BenchmarkDialog dialog(this);
+        dialog.setResults(rows);
+        dialog.exec();
+        
         statusLabel_->setText("Бенчмарк завершён");
-        QMessageBox::information(this, "Успех", "Результаты в results/results.csv");
+        
     } catch (const std::exception& e) {
         QMessageBox::critical(this, "Ошибка", e.what());
         statusLabel_->setText("Ошибка бенчмарка");

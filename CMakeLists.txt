@@ -26,8 +26,13 @@ add_executable(student_system_gui
     src/FileStorage.cpp
     src/IndexSystem.cpp
     gui/MainWindow.cpp
+    gui/MainWindow.hpp          
     gui/StudentTableModel.cpp
-    src/IndexSystemQt.cpp
+    gui/StudentTableModel.hpp   
+    gui/BenchmarkDialog.cpp
+    gui/BenchmarkDialog.hpp     
+    gui/BenchmarkTableModel.cpp
+    gui/BenchmarkTableModel.hpp 
 )
 
 target_link_libraries(student_system_gui PRIVATE Qt6::Widgets)

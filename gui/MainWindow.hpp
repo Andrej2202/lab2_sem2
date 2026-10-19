@@ -7,6 +7,7 @@
 #include <QTableView>
 #include "IndexSystem.hpp"
 #include "StudentTableModel.hpp"
+#include "BenchmarkDialog.hpp"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
