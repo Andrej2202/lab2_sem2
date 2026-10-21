@@ -9,7 +9,6 @@ FileStorage::FileStorage(const std::string& filename) : filename_(filename) {
 
 FileStorage::~FileStorage() {}
 
-// <-- Добавили const
 void FileStorage::WriteString(std::ostream& file, const std::string& str) const {
     uint32_t length = static_cast<uint32_t>(str.length());
     file.write(reinterpret_cast<const char*>(&length), sizeof(uint32_t));
@@ -18,7 +17,6 @@ void FileStorage::WriteString(std::ostream& file, const std::string& str) const 
     }
 }
 
-// <-- Добавили const
 std::string FileStorage::ReadString(std::istream& file) const {
     uint32_t length = 0;
     file.read(reinterpret_cast<char*>(&length), sizeof(uint32_t));

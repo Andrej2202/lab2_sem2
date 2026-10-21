@@ -31,10 +31,8 @@ template <typename T>
 size_t SortedSequence<T>::BinarySearch(const T& item) const {
     size_t left = 0;
     size_t right = data_->GetLength();
-    if (right == 0) return SIZE_MAX;
-    right--; 
-
-    while (left <= right) {
+    
+    while (left < right) {
         size_t mid;
         if (strategy_ == DivisionStrategy::HALF) {
             mid = left + (right - left) / 2;
@@ -43,16 +41,13 @@ size_t SortedSequence<T>::BinarySearch(const T& item) const {
         }
 
         T midVal = data_->Get(mid);
-        if (midVal == item) {
-            return mid;
-        } else if (midVal < item) {
+        if (midVal < item) {
             left = mid + 1;
         } else {
-            if (mid == 0) break;
-            right = mid - 1;
+            right = mid;
         }
     }
-    return SIZE_MAX;
+    return left;
 }
 
 template <typename T>
@@ -92,10 +87,9 @@ template <typename T>
 Sequence<T>* SortedSequence<T>::GetRange(const T& min, const T& max) const {
     MutableArraySequence<T>* result = new MutableArraySequence<T>();
     size_t len = data_->GetLength();
-    size_t start = 0;
-    while (start < len && data_->Get(start) < min) {
-        start++;
-    }
+    
+    size_t start = BinarySearch(min);
+    
     for (size_t i = start; i < len; i++) {
         T val = data_->Get(i);
         if (val > max) break;

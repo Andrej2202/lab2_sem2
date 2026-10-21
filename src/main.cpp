@@ -13,7 +13,6 @@ int main() {
     try {
         std::cout << "=== Student Index System ===\n";
         
-        // Используем текущую папку (build), чтобы не зависеть от наличия папок data/ и results/
         IndexSystem system("students.bin"); 
         
         int choice = -1;
@@ -91,7 +90,6 @@ int main() {
                 }
                 case 6: {
                     std::cout << "Запуск бенчмарка (это может занять некоторое время)...\n";
-                    // Сохраняем результаты прямо в текущую папку
                     system.RunFullBenchmark("results.csv"); 
                     break;
                 }
@@ -103,7 +101,6 @@ int main() {
             }
         }
     } 
-    // Перехватываем любые ошибки, чтобы программа не падала молча
     catch (const std::exception& e) {
         std::cerr << "\n[КРИТИЧЕСКАЯ ОШИБКА]: " << e.what() << "\n";
     } 

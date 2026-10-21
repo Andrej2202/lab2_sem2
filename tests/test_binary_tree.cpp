@@ -51,7 +51,7 @@ void test_binary_tree() {
         tree.Insert(80);
         
         auto range = tree.GetRange(30, 60);
-        assert(range->GetLength() == 4); // 30, 40, 50, 60
+        assert(range->GetLength() == 4); 
         assert(range->Get(0) == 30);
         assert(range->Get(1) == 40);
         assert(range->Get(2) == 50);
